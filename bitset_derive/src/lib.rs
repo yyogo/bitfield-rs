@@ -26,7 +26,12 @@ pub fn derive_bit_flag(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 
     let match_constant: Vec<_> = flags
         .iter()
-        .map(|ident| syn::Ident::new(&format!("_const_{}_{}", name, ident), ident.span()))
+        .map(|ident| {
+            syn::Ident::new(
+                &format!("_const_{}_{}", name, ident).to_uppercase(),
+                ident.span(),
+            )
+        })
         .collect();
 
     let storage = match the_enum.variants.len() {
