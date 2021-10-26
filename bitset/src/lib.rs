@@ -63,6 +63,7 @@ impl<F: BitFlag> BitSet<F> {
         Self(F::Storage::ZERO)
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.0 = F::Storage::ZERO;
     }
@@ -152,6 +153,7 @@ impl<F: BitFlag> From<F> for BitSet<F> {
 impl<F: BitFlag> BitAnd for BitSet<F> {
     type Output = Self;
 
+    #[inline]
     fn bitand(self, rhs: Self) -> Self::Output {
         Self(self.0 & rhs.0)
     }
@@ -159,12 +161,14 @@ impl<F: BitFlag> BitAnd for BitSet<F> {
 impl<F: BitFlag> BitAnd<F> for BitSet<F> {
     type Output = bool;
 
+    #[inline]
     fn bitand(self, rhs: F) -> Self::Output {
         self.get(rhs)
     }
 }
 
 impl<F: BitFlag, I: Into<BitSet<F>>> BitAndAssign<I> for BitSet<F> {
+    #[inline]
     fn bitand_assign(&mut self, rhs: I) {
         self.0 = self.0 & rhs.into().0
     }
@@ -173,12 +177,14 @@ impl<F: BitFlag, I: Into<BitSet<F>>> BitAndAssign<I> for BitSet<F> {
 impl<F: BitFlag, I: Into<BitSet<F>>> BitOr<I> for BitSet<F> {
     type Output = Self;
 
+    #[inline]
     fn bitor(self, rhs: I) -> Self::Output {
         Self(self.0 | rhs.into().0)
     }
 }
 
 impl<F: BitFlag, I: Into<BitSet<F>>> BitOrAssign<I> for BitSet<F> {
+    #[inline]
     fn bitor_assign(&mut self, rhs: I) {
         self.0 |= rhs.into().0
     }
@@ -186,12 +192,14 @@ impl<F: BitFlag, I: Into<BitSet<F>>> BitOrAssign<I> for BitSet<F> {
 
 impl<F: BitFlag, I: Into<BitSet<F>>> BitXor<I> for BitSet<F> {
     type Output = Self;
+    #[inline]
     fn bitxor(self, rhs: I) -> Self::Output {
         Self(self.0 ^ rhs.into().0)
     }
 }
 
 impl<F: BitFlag, I: Into<BitSet<F>>> BitXorAssign<I> for BitSet<F> {
+    #[inline]
     fn bitxor_assign(&mut self, rhs: I) {
         self.0 ^= rhs.into().0
     }
@@ -199,18 +207,21 @@ impl<F: BitFlag, I: Into<BitSet<F>>> BitXorAssign<I> for BitSet<F> {
 
 impl<F: BitFlag, I: Into<BitSet<F>>> Sub<I> for BitSet<F> {
     type Output = Self;
+    #[inline]
     fn sub(self, rhs: I) -> Self::Output {
         Self(self.0 & !rhs.into().0)
     }
 }
 
 impl<F: BitFlag, I: Into<BitSet<F>>> SubAssign<I> for BitSet<F> {
+    #[inline]
     fn sub_assign(&mut self, rhs: I) {
         self.0 &= !rhs.into().0
     }
 }
 impl<F: BitFlag> Not for BitSet<F> {
     type Output = Self;
+    #[inline]
     fn not(self) -> Self::Output {
         Self(!self.0)
     }
@@ -219,12 +230,14 @@ impl<F: BitFlag> Not for BitSet<F> {
 impl<F: BitFlag> Iterator for BitSet<F> {
     type Item = F;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         self.pop()
     }
 }
 
 impl<F: BitFlag> Extend<F> for BitSet<F> {
+    #[inline]
     fn extend<T>(&mut self, iter: T)
     where
         T: IntoIterator<Item = F>,
@@ -236,6 +249,7 @@ impl<F: BitFlag> Extend<F> for BitSet<F> {
 }
 
 impl<F: BitFlag> FromIterator<F> for BitSet<F> {
+    #[inline]
     fn from_iter<T: IntoIterator<Item = F>>(iter: T) -> Self {
         let mut set = BitSet::new();
         set.extend(iter);

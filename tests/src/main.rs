@@ -1,5 +1,4 @@
 #![no_implicit_prelude]
-
 use ::bitset::BitFlag;
 
 #[derive(BitFlag, Clone, Copy, Debug)]

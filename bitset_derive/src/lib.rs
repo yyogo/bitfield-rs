@@ -49,10 +49,12 @@ pub fn derive_bit_flag(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 
             type Storage = #storage;
 
+            #[inline(always)]
             fn bits(self) -> Self::Storage {
                 (1 as #storage) << (self as ::core::primitive::usize)
             }
 
+            #[inline(always)]
             fn from_index(index: usize) -> ::core::option::Option<Self> {
                 #(const #match_constant: ::core::primitive::usize = #name::#flags as ::core::primitive::usize;)*
                 match index {
