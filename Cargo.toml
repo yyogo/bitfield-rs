@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["bitset", "bitset_derive", "tests"]
