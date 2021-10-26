@@ -1,6 +1,7 @@
+#![no_std]
 pub use bitset_derive::*;
 
-use std::{
+use core::{
     fmt::Debug,
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Sub, SubAssign},
 };
@@ -127,11 +128,16 @@ impl<F: BitFlag> BitSet<F> {
         *self |= flag;
         result
     }
+
+    #[inline]
+    pub fn single(flag: F) -> Self {
+        BitSet(flag.bits())
+    }
 }
 
 impl<F: BitFlag + Debug> Debug for BitSet<F> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(std::any::type_name::<Self>())?;
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(core::any::type_name::<Self>())?;
         f.debug_set().entries(*self).finish()
     }
 }
@@ -139,7 +145,7 @@ impl<F: BitFlag + Debug> Debug for BitSet<F> {
 impl<F: BitFlag> From<F> for BitSet<F> {
     #[inline]
     fn from(flag: F) -> Self {
-        BitSet(flag.bits())
+        BitSet::single(flag)
     }
 }
 

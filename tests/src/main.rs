@@ -1,4 +1,6 @@
-use bitset::BitFlag;
+#![no_implicit_prelude]
+
+use ::bitset::BitFlag;
 
 #[derive(BitFlag, Clone, Copy, Debug)]
 enum MyFlag {
@@ -10,6 +12,10 @@ enum MyFlag {
 
 fn main() {
     use MyFlag::*;
+
+    use ::core::iter::Extend;
+    use ::std::println;
+
     let mut set = Foo | Bar;
     println!("set is {:?}", set);
     println!("{:?}", set.pop());
