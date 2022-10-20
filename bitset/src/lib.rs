@@ -25,6 +25,7 @@ pub trait Bits:
 
     fn bit(index: usize) -> Self;
     fn trailing_zeros(self) -> usize;
+    fn count_ones(self) -> usize;
 }
 
 macro_rules! impl_bits {
@@ -34,6 +35,7 @@ macro_rules! impl_bits {
             const COUNT: usize = Self::BITS as usize;
             #[inline(always)] fn bit(index: usize) -> Self { (1 as Self).checked_shl(index as u32).unwrap_or(0)  }
             #[inline(always)] fn trailing_zeros(self) -> usize { self.trailing_zeros() as usize }
+            #[inline(always)] fn count_ones(self) -> usize { self.count_ones() as usize }
         }
     )* }
 }
@@ -47,14 +49,32 @@ pub trait BitFlag: Sized + Copy {
     fn from_index(index: usize) -> Option<Self>;
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct BitSet<F: BitFlag + ?Sized>(F::Storage);
+
+// Derive uses type parameter bounds rather than the associated type
+// So we have to implement these ourself to avoid unnecessary bounds
+// https://github.com/rust-lang/rust/issues/26925
+
+impl<F: BitFlag> Clone for BitSet<F> {
+    fn clone(&self) -> Self {
+        BitSet(self.0)
+    }
+}
+
+impl<F: BitFlag> Copy for BitSet<F> {}
+
+impl<F: BitFlag> PartialEq for BitSet<F> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+
+impl<F: BitFlag> Eq for BitSet<F> {}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GetSingleError {
     Empty,
     TooMany,
-    Invalid,
 }
 
 impl<F: BitFlag> BitSet<F> {
@@ -79,8 +99,18 @@ impl<F: BitFlag> BitSet<F> {
     }
 
     #[inline]
-    pub fn bits(&self) -> F::Storage {
-        self.0
+    pub fn is_subset(self, superset: Self) -> bool {
+        self & superset == self
+    }
+
+    #[inline]
+    pub fn count(&self) -> usize {
+        self.0.count_ones()
+    }
+
+    #[inline]
+    pub fn bits(&self) -> &F::Storage {
+        &self.0
     }
 
     #[inline]
@@ -103,11 +133,7 @@ impl<F: BitFlag> BitSet<F> {
                 Err(GetSingleError::TooMany)
             }
         } else {
-            if self.is_empty() {
-                Err(GetSingleError::Empty)
-            } else {
-                Err(GetSingleError::Invalid)
-            }
+            Err(GetSingleError::Empty)
         }
     }
 
@@ -138,7 +164,7 @@ impl<F: BitFlag> BitSet<F> {
 
 impl<F: BitFlag + Debug> Debug for BitSet<F> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str(core::any::type_name::<Self>())?;
+        f.write_fmt(format_args!("BitSet<{}>", core::any::type_name::<F>()))?;
         f.debug_set().entries(*self).finish()
     }
 }
@@ -158,6 +184,7 @@ impl<F: BitFlag> BitAnd for BitSet<F> {
         Self(self.0 & rhs.0)
     }
 }
+
 impl<F: BitFlag> BitAnd<F> for BitSet<F> {
     type Output = bool;
 
@@ -207,6 +234,7 @@ impl<F: BitFlag, I: Into<BitSet<F>>> BitXorAssign<I> for BitSet<F> {
 
 impl<F: BitFlag, I: Into<BitSet<F>>> Sub<I> for BitSet<F> {
     type Output = Self;
+
     #[inline]
     fn sub(self, rhs: I) -> Self::Output {
         Self(self.0 & !rhs.into().0)
@@ -221,6 +249,7 @@ impl<F: BitFlag, I: Into<BitSet<F>>> SubAssign<I> for BitSet<F> {
 }
 impl<F: BitFlag> Not for BitSet<F> {
     type Output = Self;
+
     #[inline]
     fn not(self) -> Self::Output {
         Self(!self.0)
